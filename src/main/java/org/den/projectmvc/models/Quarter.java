@@ -5,10 +5,8 @@ import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
-import lombok.NonNull;
 import lombok.Setter;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Getter
@@ -24,11 +22,11 @@ public class Quarter {
     private Long year;
 
 
-    @Column(name = "quarter_number" )
+    @Column(name = "first_enumerator" )
     @NotNull
     @Min(1)
     @Max(4)
-    private Long quarterNumber;
+    private Long firstEnumerator;
 
     @Column(name = "data_size")
     private Long dataSize;

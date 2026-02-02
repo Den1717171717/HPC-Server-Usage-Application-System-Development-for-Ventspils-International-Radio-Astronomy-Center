@@ -1,60 +1,96 @@
 package org.den.projectmvc.controller;
 
-import jakarta.transaction.Transactional;
+
 import org.den.projectmvc.DTO.UserDTO;
 import org.den.projectmvc.models.User;
-import org.den.projectmvc.repositories.UserRepository;
-import org.den.projectmvc.service.UserService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
+import org.den.projectmvc.services.user.UserService;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.stream.Collectors;
+
 
 @RestController
-
 @RequestMapping("/api/users")
-
 public class UserController {
 
-    @Autowired
-    private UserService userService;
+    private final UserService userService;
 
-    @GetMapping
-    public List<UserDTO> getUsers() {
-        List<User> users = userService.getAllUsers();
-        return users.stream().map(user -> {
-            UserDTO dto = new UserDTO();
-            dto.setId(user.getId());
-            dto.setName(user.getName());
-            dto.setSurname(user.getSurname());
-            dto.setAddress(user.getAddress());
-            dto.setPhoneNumber(user.getPhoneNumber());
-            dto.setEmail(user.getEmail());
-            return dto;
-        }).collect(Collectors.toList());
+    public UserController(UserService userService) {
+        this.userService = userService;
     }
 
+    @GetMapping
+    public ResponseEntity<List<UserDTO>> findAll() {
 
-    @GetMapping("/{id}")
-    public User getUserById(@PathVariable Long id) {
-        return userService.getUserById(id);
+        return ResponseEntity.ok(
+                userService.findAll().stream().map(user -> new UserDTO(user.getId() ,
+                         user.getName() ,
+                         user.getSurname() ,
+                         user.getAddress() ,
+                         user.getPhoneNumber() ,
+                         user.getEmail() , user.getIsDeleted())).toList() // for demonstration purposes i added method isDeleted,but you should delete field "isDelete" in UserDTO
+        );
+    }
+
+    @GetMapping("{id}")
+    public ResponseEntity<UserDTO> findById(@PathVariable Long id) {
+        return ResponseEntity.ok(toDto(userService.findById(id)));
     }
 
     @PostMapping
-    public User createUser(@RequestBody User user) {
-        return userService.createUser(user);
+    public ResponseEntity<UserDTO> create(@RequestBody User user) { //idk if i should catch by UserDTO or just a User
+
+       // User created = userService.create(toEntity(dto));
+        userService.create(user);
+        return ResponseEntity.status(HttpStatus.CREATED).body(toDto(user));
     }
 
-    @PutMapping("/{id}")
-    public User updateUser(@PathVariable Long id, @RequestBody User user) {
-        return userService.updateUser(id, user);
+    @PutMapping("{id}")
+    public ResponseEntity<UserDTO> update(@PathVariable Long id, @RequestBody User user) {
+        User updated = userService.update(id, user);
+        return ResponseEntity.ok(toDto(updated));
     }
 
-    @DeleteMapping("/{id}")
-    public void deleteUser(@PathVariable Long id) {
-        userService.deleteUser(id);
+    @DeleteMapping("{id}")
+    public ResponseEntity<Void> delete(@PathVariable Long id) {
+        userService.delete(id);
+        return ResponseEntity.noContent().build();
     }
+
+
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<String> handleBadRequest(IllegalArgumentException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
+    }
+
+
+    private UserDTO toDto(User u) {
+        if (u == null)
+            return null;
+        UserDTO dto = new UserDTO();
+        dto.setId(u.getId());
+        dto.setName(u.getName());
+        dto.setSurname(u.getSurname());
+        dto.setAddress(u.getAddress());
+        dto.setPhoneNumber(u.getPhoneNumber());
+        dto.setEmail(u.getEmail());
+        return dto;
+    }
+
+    private User toEntity(UserDTO dto) {
+        if (dto == null)
+            return null;
+        User u = new User();
+        u.setId(dto.getId());
+        u.setName(dto.getName());
+        u.setSurname(dto.getSurname());
+        u.setAddress(dto.getAddress());
+        u.setPhoneNumber(dto.getPhoneNumber());
+        u.setEmail(dto.getEmail());
+        return u;
+    }
+
 }

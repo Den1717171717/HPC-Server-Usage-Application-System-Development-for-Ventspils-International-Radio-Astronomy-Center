@@ -28,7 +28,7 @@ CREATE TABLE IF NOT EXISTS user_co_authors (
 CREATE TABLE IF NOT EXISTS quarter (
                                         id SERIAL PRIMARY KEY,
                                         year INT NOT NULL,
-                                        quarter_number INT NOT NULL CHECK (quarter_number BETWEEN 1 AND 4),
+                                        first_enumerator INT NOT NULL CHECK (first_enumerator BETWEEN 1 AND 4),
                                         data_size INT NOT NULL ,
                                         start_date DATE NOT NULL,
                                         end_date DATE NOT NULL
@@ -72,14 +72,6 @@ CREATE TABLE IF NOT EXISTS results (
                                        FOREIGN KEY (application_id) REFERENCES application(id)
 );
 
-CREATE TABLE IF NOT EXISTS signatures (
-                                          id SERIAL PRIMARY KEY,
-                                          user_id INT NOT NULL,
-                                          application_id INT NOT NULL,
-                                          signature_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                                          FOREIGN KEY (user_id) REFERENCES users(id),
-                                          FOREIGN KEY (application_id) REFERENCES application(id)
-);
 
 
 
@@ -109,6 +101,8 @@ FOREIGN KEY (user_id) REFERENCES users(id),
 FOREIGN KEY (organization_id) REFERENCES organization(id)
 );
 
+
+ALTER TABLE users ADD COLUMN is_deleted BOOLEAN DEFAULT FALSE;
 INSERT INTO users (id, name, surname, address, phone_number, email, created_at) VALUES
                                                                                     (1, 'John', 'Doe', '123 Main St, City, Country', '123-456-7890', 'john.doe@example.com', CURRENT_TIMESTAMP),
                                                                                     (2, 'Jane', 'Smith', '456 Oak St, City, Country', '987-654-3210', 'jane.smith@example.com', CURRENT_TIMESTAMP),
@@ -125,7 +119,7 @@ INSERT INTO user_co_authors (id, user_id, co_author_id) VALUES
                                                             (3, 2, 1),
                                                             (4, 3, 3);
 
-INSERT INTO quarter (id, year, quarter_number, data_size, start_date, end_date) VALUES
+INSERT INTO quarter (id, year, first_enumerator, data_size, start_date, end_date) VALUES
                                                                                      (1, 2026, 1, 500, '2026-01-01', '2026-03-31'),
                                                                                      (2, 2026, 2, 600, '2026-04-01', '2026-06-30');
 
@@ -164,10 +158,7 @@ INSERT INTO results (id, application_id, result_data, data_size, created_at) VAL
                                                                                  (2, 2, 'Data analysis completed. Results ready for review.', 300, CURRENT_TIMESTAMP),
                                                                                  (3, 3, 'Simulation produced expected behavior; datasets stored.', 1200, CURRENT_TIMESTAMP);
 
-INSERT INTO signatures (id, user_id, application_id, signature_date) VALUES
-                                                                         (1, 1, 1, CURRENT_TIMESTAMP),
-                                                                         (2, 2, 2, CURRENT_TIMESTAMP),
-                                                                         (3, 3, 3, CURRENT_TIMESTAMP);
+
 
 
 

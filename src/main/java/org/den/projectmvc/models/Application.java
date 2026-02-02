@@ -35,7 +35,7 @@ public class Application {
     private String expectedResults;
 
     @Column(name = "military_use", columnDefinition = "TEXT")
-    private String militaryUse;
+     private String militaryUse;
 
     @Column(name = "created_at")
     private LocalDateTime createdAt;

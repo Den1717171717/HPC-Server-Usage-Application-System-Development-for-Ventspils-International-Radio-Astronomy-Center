@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
 import java.util.HashSet;
@@ -28,6 +29,12 @@ public class User {
     @Column(unique = true)
     private String email;
 
+
+    @Column(name = "is_deleted")
+    private Boolean isDeleted; //IDK if I need to make a field transient
+
+
+    @CreationTimestamp // added in order to make the default timestamp
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
 
@@ -56,9 +63,12 @@ public class User {
 
 
     )
-    Set<CoAuthor> coAuthors =new HashSet<>();
+    private Set<CoAuthor> coAuthors =new HashSet<>();
 
 
     @OneToMany(mappedBy="user" , cascade = CascadeType.ALL)
     Set<Application> applications =new HashSet<>();
+
+
+
 }

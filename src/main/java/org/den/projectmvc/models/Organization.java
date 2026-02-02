@@ -19,6 +19,6 @@ public class Organization {
     private String name;
 
     @ManyToMany(mappedBy = "organizations")
-    private Set<User> users = new HashSet<>();
+     private Set<User> users = new HashSet<>();
 
 }

@@ -20,5 +20,5 @@ public class CoAuthor {
     private Boolean isFromUniversity;
 
     @ManyToMany(mappedBy = "coAuthors")
-    Set<User> users = new HashSet<>();
+    private Set<User> users = new HashSet<>();
 }

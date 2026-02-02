@@ -18,6 +18,6 @@ public class Department {
     private String name;
 
     @ManyToMany(mappedBy = "departments")
-    Set<User> users =new HashSet<>();
+    private Set<User> users =new HashSet<>();
 
 }
