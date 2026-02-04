@@ -1,9 +1,6 @@
 package org.den.projectmvc.entities.organization;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.ManyToMany;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.Data;
 import org.den.projectmvc.entities.user.User;
 
@@ -15,11 +12,12 @@ import java.util.Set;
 @Data
 public class Organization {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     private String name;
 
-//    @ManyToMany(mappedBy = "organizations")
-//     private Set<User> users = new HashSet<>();
+    @ManyToMany(mappedBy = "organizations" , cascade = CascadeType.ALL)
+     private Set<User> users = new HashSet<>();
 
 }

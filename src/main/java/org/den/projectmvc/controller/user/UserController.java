@@ -1,74 +1,71 @@
 package org.den.projectmvc.controller.user;
 
 
+import lombok.RequiredArgsConstructor;
 import org.den.projectmvc.dto.UserRequest;
+import org.den.projectmvc.entities.organization.Department;
+import org.den.projectmvc.entities.organization.Organization;
 import org.den.projectmvc.entities.user.User;
+import org.den.projectmvc.services.department.DepartmentServiceImpl;
+import org.den.projectmvc.services.organization.OrganizationServiceImpl;
 import org.den.projectmvc.services.user.UserService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 
-@RestController
+@Controller
 @RequestMapping("/api/users")
+@RequiredArgsConstructor
 public class UserController {
 
     private final UserService userService;
+    private final DepartmentServiceImpl departmentService;
+    private final OrganizationServiceImpl organizationService;
 
-    public UserController(UserService userService) {
-        this.userService = userService;
-    }
+    @GetMapping("/create")
+    public String createUserForm(Model model) {
+        List<Department> departments = departmentService.findAll();
+        List<Organization> organizations = organizationService.findAll();
 
-    @GetMapping
-    public ResponseEntity<List<UserRequest>> findAll() {
+        UserRequest userRequest = new UserRequest();
+        userRequest.setDepartmentIds(new ArrayList<>());
+        userRequest.setOrganizationIds(new ArrayList<>());
 
-        return ResponseEntity.ok(
-                userService.findAll().stream().map(user -> new UserRequest(user.getId() ,
-                         user.getName() ,
-                         user.getSurname() ,
-                         user.getAddress() ,
-                         user.getPhoneNumber() ,
-                         user.getEmail() , user.getDeleted())).toList() // for demonstration purposes i added method isDeleted,but you should delete field "isDelete" in UserDTO
-        );
-    }
+        model.addAttribute("userRequest", userRequest);
+        model.addAttribute("departments", departments);
+        model.addAttribute("organizations", organizations);
 
-    @GetMapping("{id}")
-    public ResponseEntity<UserRequest> findById(@PathVariable Long id) {
-        return ResponseEntity.ok(toDto(userService.findById(id)));
+        return "users/create";
     }
 
     @PostMapping
-    public ResponseEntity<UserRequest> create(@RequestBody User user) { //idk if i should catch by UserDTO or just a User
+    public ResponseEntity<UserRequest> create(@ModelAttribute UserRequest userRequest) {
+        List<Department> departments = userRequest.getDepartmentIds().stream().map(departmentService::findById).toList();
+        List<Organization> organizations = userRequest.getOrganizationIds().stream().map(organizationService::findById).toList();
+
+        User user = new User();
+        user.setName(userRequest.getName());
+        user.setSurname(userRequest.getSurname());
+        user.setAddress(userRequest.getAddress());
+        user.setPhoneNumber(userRequest.getPhoneNumber());
+        user.setEmail(userRequest.getEmail());
+        //user.setDeleted(userRequest.getIsDeleted());
+        user.setDepartments(departments);
+        user.setOrganizations(organizations);
 
         userService.create(user);
+
         return ResponseEntity.status(HttpStatus.CREATED).body(toDto(user));
     }
 
-    @PutMapping("{id}")
-    public ResponseEntity<UserRequest> update(@PathVariable Long id, @RequestBody User user) {
-        User updated = userService.update(id, user);
-        return ResponseEntity.ok(toDto(updated));
-    }
-
-    @DeleteMapping("{id}")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
-        userService.delete(id);
-        return ResponseEntity.noContent().build();
-    }
-
-
-
-    @ExceptionHandler(IllegalArgumentException.class)
-    public ResponseEntity<String> handleBadRequest(IllegalArgumentException ex) {
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
-    }
-
-
     private UserRequest toDto(User u) {
-        if (u == null)
-            return null;
+        if (u == null) return null;
         UserRequest dto = new UserRequest();
         dto.setId(u.getId());
         dto.setName(u.getName());
@@ -76,10 +73,10 @@ public class UserController {
         dto.setAddress(u.getAddress());
         dto.setPhoneNumber(u.getPhoneNumber());
         dto.setEmail(u.getEmail());
-        dto.setIsDeleted(u.getDeleted());
+        //dto.setIsDeleted(u.getDeleted());
+        dto.setDepartmentIds(u.getDepartments().stream().map(Department::getId).toList());
+        dto.setOrganizationIds(u.getOrganizations().stream().map(Organization::getId).toList());
         return dto;
     }
-
-
-
 }
+

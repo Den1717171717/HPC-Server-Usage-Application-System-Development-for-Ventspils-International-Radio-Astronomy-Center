@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.den.projectmvc.entities.organization.Department;
+import org.den.projectmvc.entities.organization.Organization;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
@@ -30,8 +31,8 @@ public class User {
     private String phoneNumber;
     @Column(unique = true)
     private String email;
-    @Column(name = "is_deleted", nullable = false)
-    private Boolean deleted;
+//    @Column(name = "is_deleted", nullable = false)
+//    private Boolean deleted;
     @CreationTimestamp // added in order to make the default timestamp
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
@@ -43,6 +44,17 @@ public class User {
             inverseJoinColumns = @JoinColumn(name = "department_id")
     )
     private List<Department> departments = new ArrayList<>();
+
+
+
+
+    @ManyToMany(cascade = {CascadeType.PERSIST  , CascadeType.MERGE})
+    @JoinTable(
+            name = "user_organizations",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "organization_id")
+    )
+    private List<Organization> organizations = new ArrayList<>();
 
 
 

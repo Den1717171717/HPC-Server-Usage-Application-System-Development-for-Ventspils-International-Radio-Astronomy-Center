@@ -84,7 +84,7 @@ public class UserServiceImpl implements UserService {
         }
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("User with id " + id + " not found"));
-        user.setDeleted(true);
+        //user.setDeleted(true);
         userRepository.save(user);
     }
 
